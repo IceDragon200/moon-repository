@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+crawl_ruby_check . &&
+bundle update --local &&
+bundle exec rspec &&
+gemmy
