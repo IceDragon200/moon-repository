@@ -2,11 +2,11 @@ require_relative 'lib/moon-repository/version'
 
 Gem::Specification.new do |s|
   s.name        = 'moon-repository'
-  s.summary     = 'Moon DataModel package.'
-  s.description = 'Moon DataModel package, extracted the moon-packages.'
+  s.summary     = 'Moon Repository package.'
+  s.description = 'Moon implementation of the Repository pattern.'
   s.homepage    = 'https://github.com/IceDragon200/moon-repository'
   s.email       = 'mistdragon100@gmail.com'
-  s.version     = Moon::DataModel::Version::STRING
+  s.version     = Moon::Repo::Version::STRING
   s.platform    = Gem::Platform::RUBY
   s.date        = Time.now.to_date.to_s
   s.license     = 'MIT'
