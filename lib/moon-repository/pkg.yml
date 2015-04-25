@@ -1,0 +1,7 @@
+---
+name: Repository
+author: IceDragon200 (Corey Powell) (mistdragon100@gmail.com)
+description: An implementation of the Repository pattern for Moon.
+require: _basalt.rb
+deps:
+- std
