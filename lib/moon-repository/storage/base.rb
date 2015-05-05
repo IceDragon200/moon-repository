@@ -5,6 +5,7 @@ module Moon
   module Storage
     # Base class for other Storage classes
     class Base
+      # Hash storing all data in memory
       # @!attribute [r] data
       #   @return [Hash<String, Hash>]
       attr_reader :data

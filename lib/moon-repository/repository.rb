@@ -13,6 +13,7 @@ module Moon
     class EntryMissing < IndexError
     end
 
+    # Storage object implementation
     # @!attribute [r] storage
     #   @return [Storage::Base<>] {Storage} instance
     attr_reader :storage
