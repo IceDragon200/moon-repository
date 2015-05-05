@@ -1,84 +1,160 @@
+require 'moon-repository/storage/memory'
+require 'moon-repository/storage/yaml'
+
+# Moon main module
 module Moon
-  module Repo
-    class << self
-      attr_accessor :adapter
+  # Class for mediating between a {Storage} object and a {Record}
+  class Repository
+    # Error raised when a data entry already exists
+    class EntryExists < IndexError
     end
 
-    def self.setup(type)
-      case type
-      when :memory
-        self.adapter = Moon::Repo::MemoryAdapter.new
-      else
-        fail
+    # Error raised when a data entry does not exist
+    class EntryMissing < IndexError
+    end
+
+    # Storage object implementation
+    # @!attribute [r] storage
+    #   @return [Storage::Base<>] {Storage} instance
+    attr_reader :storage
+
+    # @param [Storage::Base<>] storage  a Storage object
+    def initialize(storage)
+      @storage = storage
+    end
+
+    # Writes the entry to storage
+    #
+    # @param [String] id
+    # @return [void]
+    # @api private
+    private def store(id, data)
+      @storage.modify do |stored|
+        stored[id] = data
       end
     end
 
-    # Define a #model method on your target.
-    module RepositoryBase
-      attr_writer :adapter
+    # Checks if an entry exists with the given id
+    #
+    # @param [String] id
+    # @return [Boolean]
+    def exists?(id)
+      @storage.data.key?(id)
+    end
 
-      def adapter
-        @adapter || Repo.adapter
-      end
+    # Checks if an entry exists with the given id, raises an error if it does.
+    #
+    # @param [String] id
+    # @raise [EntryExists]
+    private def ensure_no_entry(id)
+      raise EntryExists, "entry #{id} exists" if exists?(id)
+    end
 
-      def assert_is_kind_of_model(record)
-        unless record.is_a?(model)
-          raise TypeError, "unexpected model #{record.class} (expected #{model})"
+    # Checks if an entry exists with the given id, raises an error if it doesnt.
+    #
+    # @param [String] id
+    # @raise [EntryMissing]
+    private def ensure_entry(id)
+      raise EntryMissing, "entry #{id} does not exist" unless exists?(id)
+    end
+
+    # Creates an entry, if it already exists, it will raise a {EntryExists}
+    # error
+    #
+    # @param [String] id
+    # @param [Hash] data
+    # @return [void]
+    # @raise EntryExists
+    def create(id, data)
+      ensure_no_entry(id)
+      store(id, data)
+    end
+
+    # Creates an entry if it doesn't already exists
+    #
+    # @return [void]
+    def touch(id, data = {})
+      store(id, data) unless exists?(id)
+    end
+
+    # Returns all the entries in the repository,
+    # @note This is a reference to the {Storage::Base#data}
+    #       so don't do anything stupid.
+    #
+    # @return [Hash<String, Hash>]
+    def all
+      @storage.data
+    end
+
+    # Returns a entry for the given id, raises a IndexError if the entry
+    # doesn't exist.
+    #
+    # @param [String] id
+    # @return [Hash]
+    # @raise IndexError
+    def fetch(id)
+      @storage.data.fetch(id)
+    end
+
+    # Returns a entry for the given id
+    #
+    # @param [String] id
+    # @return [Hash]
+    def get(id)
+      @storage.data[id]
+    end
+
+    # Updates an entry, if it doesnt exist, it will raise a {EntryMissing}
+    # error
+    #
+    # @param [String] id
+    # @param [Hash] data
+    # @return [void]
+    # @raise EntryMissing
+    def update(id, data)
+      ensure_entry(id)
+      store(id, data)
+    end
+
+    # Saves an entry.
+    #
+    # @param [String] id
+    # @param [Hash] data
+    # @return [Boolean] true if entry was created or false if it was updated
+    def save(id, data)
+      created = !exists?(id)
+      store(id, data)
+      created
+    end
+
+    # Removes an entry, raises a {EntryMissing} error, if the entry didn't exist.
+    #
+    # @param [String] id
+    # @return [void]
+    # @raise EntryMissing
+    def delete(id)
+      ensure_entry(id)
+      @storage.modify { |stored| stored.delete(id) }
+    end
+
+    # Clears all entries
+    #
+    # @return [void]
+    def clear
+      @storage.modify { |stored| stored.clear }
+    end
+
+    # Creates a Enumerator which yields all entries which return true for
+    # the given `block`.
+    #
+    # @yieldparam [Hash] entry
+    # @return [Enumerator]
+    def query(&block)
+      data = @storage.data.dup
+      Enumerator.new do |yielder|
+        data.each_value do |entry|
+          yielder.yield entry if block.call(entry)
         end
-      end
-
-      def create(params = {})
-        adapter.create model, params
-      end
-
-      def save(record)
-        adapter.save model, record
-      end
-
-      def all
-        adapter.all model
-      end
-
-      def find(id)
-        adapter.find model, id
-      end
-
-      def find_by(query)
-        adapter.find_by model, query
-      end
-
-      def update(record, params)
-        assert_is_kind_of_model record
-        adapter.update record, params
-      end
-
-      def destroy(record)
-        assert_is_kind_of_model record
-        adapter.destroy record
-      end
-
-      def destroy_all
-        adapter.destroy_all model
-      end
-
-      def clear_all
-        adapter.clear_all model
-      end
-
-      def exists?(id)
-        adapter.exists?(model, id)
-      end
-
-      def count
-        adapter.count(model)
-      end
-    end
-
-    module Repository
-      include RepositoryBase
-
-      def model
-        self
       end
     end
   end

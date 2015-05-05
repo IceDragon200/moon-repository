@@ -1,9 +1,13 @@
 module Moon
-  module Repo
+  class Repository
+    # Version module
     module Version
-      MAJOR, MINOR, TEENY, PATCH = 1, 0, 0, nil
+      # @return [Integer, nil]
+      MAJOR, MINOR, TEENY, PATCH = 1, 1, 0, nil
+      # @return [String]
       STRING = [MAJOR, MINOR, TEENY, PATCH].compact.join('.')
     end
+    # @return [String]
     VERSION = Version::STRING
   end
 end
