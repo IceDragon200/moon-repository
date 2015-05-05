@@ -67,7 +67,11 @@ module Moon
         end
       end
 
+      # Creates a query Enumerator which yields all records which match
+      # the given query, the query is a key value pair compared using `==`
+      #
       # @param [Hash<Symbol, Object>] query
+      # @return [Enumerator]
       def where(query)
         Enumerator.new do |yielder|
           repository.query do |data|
@@ -80,10 +84,16 @@ module Moon
         end
       end
 
+      # Returns an enumerator for iterating all records.
+      #
+      # @return [Enumerator]
       def all
         where({})
       end
 
+      # Updates records which match the given query, if query is empty
+      # it will update all records.
+      #
       # @param [Hash<Symbol, Object>] data
       # @param [Hash<Symbol, Object>] query
       def update_all(data, query = {})
@@ -92,6 +102,9 @@ module Moon
         end
       end
 
+      # Destroys records which match the query, if query is empty, it
+      # will destroy all records.
+      #
       # @param [Hash<Symbol, Object>] query
       def destroy_all(query = {})
         where(query).each do |record|
@@ -99,6 +112,9 @@ module Moon
         end
       end
 
+      # Deletes records which match the query, if `query` is empty, it will
+      # delete all records, similar to {#clear_all}
+      #
       # @param [Hash<Symbol, Object>] query
       def delete_all(query = {})
         where(query).each do |record|
@@ -114,7 +130,10 @@ module Moon
         repository.clear
       end
 
+      # Creates a new record from the given data
+      #
       # @param [Hash<Symbol, Object>] data
+      # @return [Object] the newly created record
       def create(data = {})
         record = model.new(data)
         repository.create record.id, record.to_h
@@ -123,23 +142,34 @@ module Moon
         record
       end
 
+      # Checks if a record exists with the given id
+      #
       # @param [String] id
+      # @return [Boolean] true if the record exists, false otherwise
       def exists?(id)
         repository.exists?(id)
       end
 
+      # Gets and creates a model from the data gotten for the id,
+      # if no entry was found, it will return nil.
+      #
       # @param [String] id
       # @return [Object, nil]
       def get(id)
         (data = repository.get(id)) && model.new(data)
       end
 
+      # Returns the first record which matches the given query
+      #
       # @param [Hash<Symbol, Object>] query
       # @return [Object, nil] an instance of the model
       def first(query)
         where(query).first
       end
 
+      # Counts records which matches the given query, if the query
+      # is empty, counts all records instead.
+      #
       # @param [Hash<Symbol, Object>] query
       def count(query = {})
         where(query).count
@@ -165,7 +195,10 @@ module Moon
       end
     end
 
-    # Instance methods for interacting with Record instance objects
+    # Instance methods for interacting with Record instance objects,
+    # all Records must implement an `#id` attribute, and a `#to_h` methid,
+    # which will be used by the repository to store its data.
+    # The `#to_h` method must return a `Hash<Symbol, Object>` hash.
     module InstanceMethods
       # The repository that corresponds with this model
       #
