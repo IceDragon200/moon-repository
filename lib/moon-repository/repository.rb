@@ -1,84 +1,90 @@
+require 'moon-repository/storage/memory'
+require 'moon-repository/storage/yaml'
+
 module Moon
-  module Repo
-    class << self
-      attr_accessor :adapter
+  class Repository
+    class EntryExists < IndexError
     end
 
-    def self.setup(type)
-      case type
-      when :memory
-        self.adapter = Moon::Repo::MemoryAdapter.new
+    class EntryMissing < IndexError
+    end
+
+    attr_reader :storage
+
+    def initialize(config = {})
+      if config[:memory]
+        @storage = Storage::Memory.new
       else
-        fail
+        @storage = Storage::YAMLStorage.new(config.fetch(:filename))
       end
     end
 
-    # Define a #model method on your target.
-    module RepositoryBase
-      attr_writer :adapter
-
-      def adapter
-        @adapter || Repo.adapter
+    private def store(id, data)
+      @storage.modify do |stored|
+        stored[id] = data
       end
+    end
 
-      def assert_is_kind_of_model(record)
-        unless record.is_a?(model)
-          raise TypeError, "unexpected model #{record.class} (expected #{model})"
+    def exists?(id)
+      @storage.data.key?(id)
+    end
+
+    private def ensure_no_entry(id)
+      raise EntryExists, "entry #{id} exists" if exists?(id)
+    end
+
+    private def ensure_entry(id)
+      raise EntryMissing, "entry #{id} does not exist" unless exists?(id)
+    end
+
+    def create(id, data)
+      ensure_no_entry(id)
+      store(id, data)
+    end
+
+    def touch(id, data = {})
+      store(id, data) unless exists?(id)
+    end
+
+    def all
+      @storage.data
+    end
+
+    def fetch(id)
+      @storage.data.fetch(id)
+    end
+
+    def get(id)
+      @storage.data[id]
+    end
+
+    def update(id, data)
+      ensure_entry(id)
+      store(id, data)
+    end
+
+    # @return [Boolean] true if record was created or false if it was updated
+    def save(id, data)
+      created = !exists?(id)
+      store(id, data)
+      created
+    end
+
+    def delete(id)
+      ensure_entry(id)
+      @storage.modify { |stored| stored.delete(id) }
+    end
+
+    def clear
+      @storage.modify { |stored| stored.clear }
+    end
+
+    def query(&block)
+      data = @storage.data.dup
+      Enumerator.new do |yielder|
+        data.each_value do |entry|
+          yielder.yield entry if block.call(entry)
         end
-      end
-
-      def create(params = {})
-        adapter.create model, params
-      end
-
-      def save(record)
-        adapter.save model, record
-      end
-
-      def all
-        adapter.all model
-      end
-
-      def find(id)
-        adapter.find model, id
-      end
-
-      def find_by(query)
-        adapter.find_by model, query
-      end
-
-      def update(record, params)
-        assert_is_kind_of_model record
-        adapter.update record, params
-      end
-
-      def destroy(record)
-        assert_is_kind_of_model record
-        adapter.destroy record
-      end
-
-      def destroy_all
-        adapter.destroy_all model
-      end
-
-      def clear_all
-        adapter.clear_all model
-      end
-
-      def exists?(id)
-        adapter.exists?(model, id)
-      end
-
-      def count
-        adapter.count(model)
-      end
-    end
-
-    module Repository
-      include RepositoryBase
-
-      def model
-        self
       end
     end
   end
