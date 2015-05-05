@@ -4,6 +4,7 @@ module Moon
   module Storage
     # Storage class for encoding/decoding data as YAML.
     class YAMLStorage < Base
+      # File to read/store data
       # @!attribute filename
       #   @return [String]
       attr_accessor :filename
