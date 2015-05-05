@@ -4,3 +4,4 @@
 /doc
 Gemfile.lock
 __gemmy__
+spec/data/yaml_save_test.yml
