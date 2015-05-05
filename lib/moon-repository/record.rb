@@ -23,8 +23,24 @@ module Moon
         #
       end
 
-      def create_repository
-        Repository.new(repo_config)
+      # Creates a {Storage} object for the {Repository}
+      # @return [Storage::Base<>]
+      # @api
+      private def create_storage
+        config = repo_config
+        if config[:memory]
+          Storage::Memory.new
+        else
+          Storage::YAMLStorage.new(config.fetch(:filename))
+        end
+      end
+
+      # Creates an instance of {Repository} to use for the Record
+      #
+      # @return [Repository]
+      # @api
+      private def create_repository
+        Repository.new(create_storage)
       end
 
       # @return [Repository]

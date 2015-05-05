@@ -11,12 +11,8 @@ module Moon
 
     attr_reader :storage
 
-    def initialize(config = {})
-      if config[:memory]
-        @storage = Storage::Memory.new
-      else
-        @storage = Storage::YAMLStorage.new(config.fetch(:filename))
-      end
+    def initialize(storage)
+      @storage = storage
     end
 
     private def store(id, data)
