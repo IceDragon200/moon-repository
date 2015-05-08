@@ -1,7 +1,7 @@
 language: ruby
 addons:
   code_climate:
-    repo_token: 24e6dca48d8fe9c48a87881625dc9cbcc10aba9ad3760e3fce38c6c4e5b03927
+    repo_token: 015d7e901272d46d11fa920bcbf0c3fa43886ba4f752244d6361efdc706d4695
 rvm:
 - 2.1
 - 2.2
@@ -11,4 +11,4 @@ before_install:
 install:
 - bundle install
 script:
-- bundle exec rspec -r ./spec/spec_helper.rb
+- bundle exec rspec
