@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.name        = 'moon-repository'
   s.summary     = 'Moon Repository package.'
   s.description = 'Moon implementation of the Repository pattern.'
-  s.homepage    = 'https://github.com/IceDragon200/moon-repository'
+  s.homepage    = 'https://github.com/polyfox/moon-repository'
   s.email       = 'mistdragon100@gmail.com'
   s.version     = Moon::Repository::Version::STRING
   s.platform    = Gem::Platform::RUBY
