@@ -73,14 +73,13 @@ module Moon
       # @param [Hash<Symbol, Object>] query
       # @return [Enumerator]
       def where(query)
-        Enumerator.new do |yielder|
-          repository.query do |data|
-            query.all? do |key, value|
-              data[key] == value
-            end
-          end.each do |data|
-            yielder.yield model.new(data)
+        return to_enum :where, query unless block_given?
+        repository.query do |data|
+          query.all? do |key, value|
+            value == data[key]
           end
+        end.each do |data|
+          yield model.new(data)
         end
       end
 
