@@ -117,7 +117,7 @@ module Moon
       # @param [Hash<Symbol, Object>] query
       def delete_all(query = {})
         where(query).each do |record|
-          repository.delete record.id
+          repository.delete record.__primary_id__
         end
       end
 
@@ -135,7 +135,7 @@ module Moon
       # @return [Object] the newly created record
       def create(data = {})
         record = model.new(data)
-        repository.create record.id, record.to_h
+        repository.create record.__primary_id__, record.to_h
         record.on_create
         record.on_save
         record
@@ -162,14 +162,23 @@ module Moon
       #
       # @param [Hash<Symbol, Object>] query
       # @return [Object, nil] an instance of the model
-      def first(query)
+      def first(query = {})
         where(query).first
+      end
+
+      # Returns the last record which matches the given query
+      #
+      # @param [Hash<Symbol, Object>] query
+      # @return [Object, nil] an instance of the model
+      def last(query = {})
+        where(query).last
       end
 
       # Counts records which matches the given query, if the query
       # is empty, counts all records instead.
       #
       # @param [Hash<Symbol, Object>] query
+      # @return [Integer] count
       def count(query = {})
         where(query).count
       end
@@ -183,12 +192,22 @@ module Moon
         model.new(repository.fetch(id))
       end
 
-      # Locates and returns the first record matching the query, if not
+      # Locates and returns the first record matching the query, if no
+      # record is found, nil is returned
+      #
+      # @param [Hash<Symbol, Object>] query
+      # @return [Object, nil]
+      def find_by(query)
+        first(query)
+      end
+
+      # Locates and returns the first record matching the query, if no
       # record is found, raises a {RecordNotFound} error
       #
       # @param [Hash<Symbol, Object>] query
+      # @return [Object]
       # @raise RecordNotFound
-      def find_by(query)
+      def find_by!(query)
         first(query) ||
           (raise RecordNotFound, "no record found for query: #{query}")
       end
@@ -199,6 +218,13 @@ module Moon
     # which will be used by the repository to store its data.
     # The `#to_h` method must return a `Hash<Symbol, Object>` hash.
     module InstanceMethods
+      # Whatever field should be used as the id for storing the record
+      #
+      # @return [String] id
+      def __primary_id__
+        id
+      end
+
       # The repository that corresponds with this model
       #
       # @return [Repository] The repository instance
