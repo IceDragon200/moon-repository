@@ -23,23 +23,12 @@ module Moon
       @storage = storage
     end
 
-    # Writes the entry to storage
-    #
-    # @param [String] id
-    # @return [void]
-    # @api private
-    private def store(id, data)
-      @storage.modify do |stored|
-        stored[id] = data
-      end
-    end
-
     # Checks if an entry exists with the given id
     #
     # @param [String] id
     # @return [Boolean]
     def exists?(id)
-      @storage.data.key?(id)
+      @storage.exists?(id)
     end
 
     # Checks if an entry exists with the given id, raises an error if it does.
@@ -67,14 +56,18 @@ module Moon
     # @raise EntryExists
     def create(id, data)
       ensure_no_entry(id)
-      store(id, data)
+      @storage.insert(id, data)
     end
 
     # Creates an entry if it doesn't already exists
     #
     # @return [void]
     def touch(id, data = {})
-      store(id, data) unless exists?(id)
+      if exists?(id)
+        @storage.update(id, data)
+      else
+        @storage.insert(id, data)
+      end
     end
 
     # Returns all the entries in the repository,
@@ -101,7 +94,7 @@ module Moon
     # @param [String] id
     # @return [Hash]
     def get(id)
-      @storage.data[id]
+      @storage.get(id)
     end
 
     # Updates an entry, if it doesnt exist, it will raise a {EntryMissing}
@@ -113,7 +106,7 @@ module Moon
     # @raise EntryMissing
     def update(id, data)
       ensure_entry(id)
-      store(id, data)
+      @storage.update(id, data)
     end
 
     # Saves an entry.
@@ -123,7 +116,7 @@ module Moon
     # @return [Boolean] true if entry was created or false if it was updated
     def save(id, data)
       created = !exists?(id)
-      store(id, data)
+      touch(id, data)
       created
     end
 
@@ -134,14 +127,14 @@ module Moon
     # @raise EntryMissing
     def delete(id)
       ensure_entry(id)
-      @storage.modify { |stored| stored.delete(id) }
+      @storage.delete(id)
     end
 
     # Clears all entries
     #
     # @return [void]
     def clear
-      @storage.modify { |stored| stored.clear }
+      @storage.clear
     end
 
     # Creates a Enumerator which yields all entries which return true for

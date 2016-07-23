@@ -33,7 +33,7 @@ module Moon
       # create directories or preparations for the repo.
       #
       # @return [void]
-      private def prepare_repository
+      protected def prepare_repository
         #
       end
 

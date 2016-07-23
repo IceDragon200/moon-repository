@@ -3,7 +3,7 @@ module Moon
     # Version module
     module Version
       # @return [Integer, nil]
-      MAJOR, MINOR, TEENY, PATCH = 1, 1, 1, nil
+      MAJOR, MINOR, TEENY, PATCH = 2, 0, 0, nil
       # @return [String]
       STRING = [MAJOR, MINOR, TEENY, PATCH].compact.join('.')
     end

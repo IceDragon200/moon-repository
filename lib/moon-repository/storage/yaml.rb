@@ -20,7 +20,7 @@ module Moon
       #
       # @return [void]
       # @api
-      def load_unsafe
+      protected def load_unsafe
         d = YAML.load_file(@filename) || {}
         @data = Hash[d.map do |key, value|
           [key, value.symbolize_keys]
@@ -31,7 +31,7 @@ module Moon
       #
       # @return [void]
       # @api
-      def save_unsafe
+      protected def save_unsafe
         File.write @filename, @data.to_yaml
       end
     end
