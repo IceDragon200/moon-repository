@@ -1,10 +1,8 @@
-require 'codeclimate-test-reporter'
 require 'simplecov'
 require 'yaml'
 require 'active_support/core_ext/string/inflections'
 require 'active_support/core_ext/hash'
 
-CodeClimate::TestReporter.start
 SimpleCov.start
 
 require 'moon-repository/load'
