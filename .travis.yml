@@ -1,10 +1,11 @@
-language: ruby
 sudo: false
+language: ruby
 addons:
   code_climate:
     repo_token: 015d7e901272d46d11fa920bcbf0c3fa43886ba4f752244d6361efdc706d4695
 rvm:
-- 2.3.1
+- 2.3
+- 2.4
 - ruby-head
 matrix:
   allow_failures:
