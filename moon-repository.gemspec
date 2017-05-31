@@ -1,4 +1,5 @@
 require_relative 'lib/moon-repository/version'
+require 'date'
 
 Gem::Specification.new do |s|
   s.name        = 'moon-repository'
